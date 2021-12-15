@@ -88,6 +88,22 @@ const App = () => {
     setcolorkey(blank);
     setcolors([blank]);
   };
+  
+ const handleCountChange = (e) => {
+    let val = e.target.value;
+		if (val === '') {
+			setcount(0)
+      generateElements();
+		} else {
+			val = parseInt(val);
+      if(val > 100) val = 100;
+      if(val < 1) val = 1;
+
+     	setcount(val)
+      generateElements();
+			
+		}
+  };
 
   // create random length of bar upto 100...
   const generateElements = async () => {
