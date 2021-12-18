@@ -1,6 +1,6 @@
 import React, { Component, useEffect } from "react";                                                                 
-import Bar from "./components/Bargraph";
-import BubbleSort from "./algorithms/BubbleSortalgo";
+import Bar from "./components/Bar";
+import BubbleSort from "./algorithms/BubbleSort";
 
 import "./App.css";
 
@@ -38,7 +38,7 @@ class App extends Component {
     let steps = this.state.steps;
     let colors = this.state.colors;
 
-    //  this.clearTimeouts();
+     this.clearTimeouts();
      let timeouts = [];
 
     let i = 0;
@@ -55,9 +55,9 @@ class App extends Component {
       i++;
     }
 
-    // this.setState({
-    //   timeouts: timeouts,
-    // });
+    this.setState({
+      timeouts: timeouts,
+    });
   };
 
   generateSteps = () => {
@@ -142,7 +142,7 @@ class App extends Component {
        <div className="flex flex-row justify-center md:pt-8 pt-4">
          <h1 className="text-2xl md:text-5xl text-gray-50 hover:text-gray-400 ">BubbleSort Visualizer</h1>
        </div>
-        <div className="pt-8 md:pt-20  justify-center flex flex-row items-center gap-x-1">
+        <div className="pt-8 md:pt-10  justify-center flex flex-row items-center gap-x-1">
           <div
             className="hover:bg-gray-900  w-6 text-center font-bold text-white cursor-pointer h-6 bg-sky-900"
             onClick={() => {
