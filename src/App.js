@@ -1,202 +1,191 @@
-/*
-  **************
-  Satyam Tomar
-  *************
-*/
-
-import React, { useState, useEffect } from "react";
-
-import Bar from "./components/Bar";
-import BubbleSort from "./algorithms/BubbleSort";
+import React, { Component, useEffect } from "react";                                                                 
+import Bar from "./components/Bargraph";
+import BubbleSort from "./algorithms/BubbleSortalgo";
 
 import "./App.css";
 
-// MyLogic (Responsive site made using tailwind css)
-// 1) as page loads i will create  some random elements of some size n
-// 2) then user can change length of input in provided input field
-// 3) and after clicking on submit first i will generate all steps needed to sort.
-// 4) then after getting all steps I will start showing animations according to steps i got.
-// 5) Implemented component based coding with user friendly folder structure.
-
-const App = () => {
-  const [array, setarray] = useState([]); // this array contains length og bars
-  const [steps, setsteps] = useState([]); // it is used to store all the steps to be done in bubbleSort
-  const [colorkey, setcolorkey] = useState([]); // this stores colors of bars which I'm using in this website
-  const [colors, setcolors] = useState([]); // this array contains color of particular bar
-  const [timout, settimout] = useState([]); // this contains timeouts which used for animations
-
-  const [currStep, setcurrStep] = useState(0); // Used to determine the current step
-  const [count, setcount] = useState(10);
-
-  // this delay is speed of animation
-  const delay = 500;
-
-  // this function runs on load and generate random elements..
-  useEffect(() => {
-    generateElements();
-  }, []);
-
-  // works on clicking startSort button
-  const handleStart = () => {
-    generateSteps();
-    let STEPS = [...steps];
-    let COLORS = [...colors];
-
-    clearTimeouts();
-    let timeouts = [];
-
-    let i = 0;
-    while (i < STEPS.length - currStep) {
-      let timeout = setTimeout(() => {
-        let CURRSTEP = currStep;
-        setarray(STEPS[CURRSTEP]);
-        setcolorkey(COLORS[CURRSTEP]);
-        setcurrStep(CURRSTEP + 1);
-        timeouts.push(timeout);
-      }, delay * i);
-      i++;
-    }
-    settimout(timeouts);
+class App extends Component {
+  state = {
+    array: [],
+    steps: [],
+    colorKey: [],
+    colors: [],
+    timouts: [],
+    currentStep: 0,
+    count: 20,
+    delay: 500,
+    algorithm: "",
   };
 
-  // generate steps to be done for bubble sort
-  const generateSteps = () => {
-    let ARR = [...array];
-    let STEPS = [...steps];
-    let COLORS = [...colors];
-
-    const data = BubbleSort(ARR, 0, STEPS, COLORS);
-
-    setsteps(data.steps);
-    setcolors(data.colors);
-  };
-
-  // helper fn to generate random elements
-  const generateRandomNumber = (min, max) => {
-    return Math.floor(Math.random() * (max - min) + min);
-  };
-
-  // clears timeouts after work done
-  const clearTimeouts = () => {
-    timout.forEach((timeout) => clearTimeout(timeout));
-    settimout([]);
-  };
-
-  // clears colorKeys
-  const clearColorKey = () => {
-    let blank = new Array(count).fill(0);
-    setcolorkey(blank);
-    setcolors([blank]);
-  };
-  
- const handleCountChange = (e) => {
+  componentDidMount() {
+    this.generateElements();
+  }
+  handleCountChange = (e) => {
     let val = e.target.value;
 		if (val === '') {
-			setcount(0)
-      generateElements();
+			this.setState({count:0},()=>this.generateElements());
 		} else {
 			val = parseInt(val);
       if(val > 100) val = 100;
       if(val < 1) val = 1;
 
-     	setcount(val)
-      generateElements();
+      this.setState({count:val},()=>this.generateElements());
 			
 		}
   };
 
-  // create random length of bar upto 100...
-  const generateElements = async () => {
-    clearTimeouts();
-    clearColorKey();
+  handleStart = () => {
+    let steps = this.state.steps;
+    let colors = this.state.colors;
 
-    let COUNT = count;
-    let arr = [];
+    //  this.clearTimeouts();
+     let timeouts = [];
 
-    for (let i = 0; i < COUNT; i++) {
-      arr.push(generateRandomNumber(50, 200));
+    let i = 0;
+    while (i < steps.length - this.state.currentStep) {
+      let timeout = setTimeout(() => {
+        let currentStep = this.state.currentStep;
+        this.setState({
+          array: steps[currentStep],
+          colorKey: colors[currentStep],
+          currentStep: currentStep + 1,
+        });
+        timeouts.push(timeout);
+      }, this.state.delay * i);
+      i++;
     }
 
-    const fn = (cb) => {
-      setarray([...arr]);
-      setsteps([arr]);
-      setcount(COUNT);
-      setcurrStep(0);
-
-      cb();
-    };
-
-    fn(generateSteps);
+    // this.setState({
+    //   timeouts: timeouts,
+    // });
   };
 
-  const allBars = array.map((value, index) => {
-    return (
-      <Bar
-        key={index}
-        length={value}
-        colorKey={colorkey[index]}
-        arrayLen={array.length}
-      />
-    );
-  });
+  generateSteps = () => {
+    let array = this.state.array.slice();
+    let steps = this.state.steps.slice();
+    let colors = this.state.colors.slice();
+    console.log(colors);
+    BubbleSort(array, 0, steps, colors);
+    console.log(colors);
+    this.setState({
+      steps: steps,
+      colors: colors,
+    });
+  };
 
-  return (
-    <div className="app  ">
-      <div className="flex flex-row justify-center md:pt-8 pt-4">
-        <h1 className="text-2xl md:text-5xl text-gray-50 hover:text-gray-400 ">
-          BubbleSort Visualizer
-        </h1>
-      </div>
-      <div className="pt-8 md:pt-20  justify-center flex flex-row items-center gap-x-1">
-        <div
-          className="hover:bg-gray-900  w-6 text-center font-bold text-white cursor-pointer h-6 bg-sky-900"
-          onClick={() => {
-            if (count < 200) {
-              setcount(count + 1);
-              generateElements();
-            }
-          }}
-        >
-          +
-        </div>
-        <div className="border-2 border-gray-400 ">
+  generateRandomNumber = (min, max) => {
+    return Math.floor(Math.random() * (max - min) + min);
+  };
+
+  clearTimeouts = () => {
+    this.state.timouts.forEach((timeout) => clearTimeout(timeout));
+    this.setState({ timeouts: [] });
+  };
+
+  clearColorKey = () => {
+    let blank = new Array(this.state.count).fill(0);
+    this.setState({ colorKey: blank, colors: [blank] });
+  };
+
+  generateElements = () => {
+    this.clearTimeouts();
+    this.clearColorKey();
+
+    let count = this.state.count;
+    let arr = [];
+
+    for (let i = 0; i < count; i++) {
+      arr.push(this.generateRandomNumber(20, 100));
+    }
+
+    this.setState(
+      {
+        array: arr,
+        steps: [arr],
+        count: count,
+        currentStep: 0,
+      },
+      () => this.generateSteps()
+    );
+
+    console.log(arr);
+  };
+
+  changeArray = (index, value) => {
+    let array = this.state.array;
+    array[index] = value;
+    this.setState(
+      {
+        array: array,
+        steps: [array],
+        currentStep: 0,
+      },
+      () => this.generateSteps()
+    );
+  };
+
+  render() {
+    const bars = this.state.array.map((value, index) => {
+      return (
+        <Bar
+          key={index}
+          index={index}
+          length={value}
+          colorKey={this.state.colorKey[index]}
+          changeArray={this.changeArray}
+          arrayLen={this.state.array.length}
+        />
+      );
+    });
+    return (
+      <div className="app  ">
+       <div className="flex flex-row justify-center md:pt-8 pt-4">
+         <h1 className="text-2xl md:text-5xl text-gray-50 hover:text-gray-400 ">BubbleSort Visualizer</h1>
+       </div>
+        <div className="pt-8 md:pt-20  justify-center flex flex-row items-center gap-x-1">
+          <div
+            className="hover:bg-gray-900  w-6 text-center font-bold text-white cursor-pointer h-6 bg-sky-900"
+            onClick={() => {
+              if (this.state.count <200) {
+                this.setState({ count: this.state.count + 1 },()=>this.generateElements());
+              }
+            }}
+          >
+            +
+          </div>
+          <div className="border-2 border-gray-400 "  >
           <input
             type="number"
             className="bg-white hover:bg-gray-400"
-            value={count}
-            onChange={handleCountChange}
+            placeholder="Enter length of array"
+            value={this.state.count}
+            onChange={this.handleCountChange}
           />
+          </div>
+          <div
+            className="hover:bg-gray-900 w-6 text-center font-bold text-white cursor-pointer h-6 bg-sky-900"
+            onClick={() => {
+              if (this.state.count > 5) {
+                this.setState({ count: this.state.count - 1 },()=>this.generateElements());
+              }
+            }}
+          >
+            -
+          </div>
         </div>
-        <div
-          className="hover:bg-gray-900 w-6 text-center font-bold text-white cursor-pointer h-6 bg-sky-900"
-          onClick={() => {
-            if (count > 5) {
-              setcount(count - 1);
-              generateElements();
-            }
-          }}
-        >
-          -
+        <div className="frame  w-full ">
+          <div className="card container space-x-2 justify-center">{bars}</div>
         </div>
+        <div className="flex flex-row justify-center md:pt-8 pt-4">
+        <button onClick={this.handleStart} className="rounded-full hover:bg-gray-900 py-2 px-3 font-lg bg-sky-900 text-gray-100 " >Start the sort</button>
+        </div>
+        <div className="flex flex-row justify-center md:pt-8 pt-4">
+         <h1 className="text-xl md:text-2xl text-gray-50 hover:text-gray-400 pt-1 md:pt-4">Made by Satyam Tomar</h1>
+       </div>
+      
       </div>
-      <div className="frame  w-full ">
-        <div className="card container space-x-2 justify-center">{allBars}</div>
-      </div>
-      <div className="flex flex-row justify-center md:pt-8 pt-4">
-        <button
-          onClick={handleStart}
-          className="rounded-full hover:bg-gray-900 py-2 px-3 font-lg bg-sky-900 text-gray-100 "
-        >
-          Start the sort
-        </button>
-      </div>
-      <div className="flex flex-row justify-center md:pt-8 pt-4">
-        <h1 className="text-xl md:text-2xl text-gray-50 hover:text-gray-400 pt-1 md:pt-4">
-          Made by Satyam Tomar
-        </h1>
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default App;
